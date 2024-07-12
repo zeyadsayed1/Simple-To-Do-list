@@ -1,79 +1,90 @@
-
 let input = document.querySelector(".input");
 let submit = document.querySelector(".add");
-let tasks = document.querySelector(".tasks");
+let tasksDiv = document.querySelector(".tasks");
 
-let ArrayOfTasks = [];
-if (localStorage.getItem("tasks")) {
-  ArrayOfTasks = JSON.parse(localStorage.getItem("tasks"));
+let arrayOfTasks = [];
+// check if localstorage has tasks
+if (window.localStorage.getItem("tasks")) {
+  arrayOfTasks = JSON.parse(window.localStorage.tasks);
 }
-GetDataFromLocalStorage();
 
-tasks.addEventListener("click", (e) => {
-  if (e.target.classList.contains("del")) {
-    DeleteTaskWith(e.target.parentElement.getAttribute("data-id"));
-    e.target.parentElement.remove();
-  }
-  if (e.target.classList.contains("task")) {
-        ToggleStatusTaskWith(e.target.getAttribute("data-id"));
-        e.target.classList.toggle("done");
-  }
-});
-
-submit.onclick = function () {
-  if (input.value !== "") {
+getDataFromLocalStorage();
+submit.onclick = () => {
+  if (input.value.trim("").length !== 0) {
     AddTasksToArray(input.value);
     input.value = "";
   }
 };
+
+tasksDiv.addEventListener("click", (e) => {
+  // Delete Button
+  if (e.target.classList.contains("delete")) {
+    // Remove Task From Local Storage
+    deleteTaskWith(e.target.parentElement.getAttribute("id"));
+    // Remove Element From Page
+    e.target.parentElement.remove();
+  }
+
+  // toggle class
+  if (e.target.classList.contains("task")) {
+    toggleStatusTaskWith(e.target.getAttribute("id"));
+    e.target.classList.toggle("done");
+  }
+});
+
 function AddTasksToArray(taskText) {
   const task = {
     id: Date.now(),
     title: taskText,
     completed: false,
   };
-  ArrayOfTasks.push(task);
-  addElementsToPageFrom(ArrayOfTasks);
-  AddTasksToLocalStorageFrom(ArrayOfTasks);
+  arrayOfTasks.push(task);
+  // add tasks to page
+  addTasksToPage(arrayOfTasks);
+  //add tasks to localStorage
+  addTasksToLocalStorage(arrayOfTasks);
 }
-function addElementsToPageFrom(ArrayOfTasks) {
-  tasks.innerHTML = "";
-  ArrayOfTasks.forEach((el) => {
-    if (el.completed) {
-      div.className = "task done";
+
+function addTasksToPage(arrayOfTasks) {
+  tasksDiv.innerHTML = "";
+  arrayOfTasks.forEach((task) => {
+    let taskEle = document.createElement("div");
+    taskEle.className = "task";
+    if (task.completed) {
+      taskEle.className = "task done";
     }
-    let div = document.createElement("div");
-    let span = document.createElement("button");
-    span.className = "del";
-    span.innerHTML = "Delete";
-    div.className = "task";
-    div.setAttribute("data-id", el.id);
-    div.appendChild(document.createTextNode(el.title));
-    div.appendChild(span);
-    tasks.append(div);
+    let delBtn = document.createElement("button");
+    let text = document.createElement("div");
+    delBtn.className = "delete";
+    text.className = "text";
+    taskEle.id = task.id;
+    text.textContent = task.title;
+    delBtn.textContent = "Delete";
+    taskEle.appendChild(text);
+    taskEle.appendChild(delBtn);
+    tasksDiv.appendChild(taskEle);
   });
 }
-function AddTasksToLocalStorageFrom(ArrayOfTasks) {
-  window.localStorage.setItem("tasks", JSON.stringify(ArrayOfTasks));
+function addTasksToLocalStorage(arrayOfTasks) {
+  window.localStorage.setItem("tasks", JSON.stringify(arrayOfTasks));
 }
-function GetDataFromLocalStorage() {
+function getDataFromLocalStorage() {
   let data = window.localStorage.getItem("tasks");
   if (data) {
-    let task = JSON.parse(data);
-    addElementsToPageFrom(task);
+    addTasksToPage(JSON.parse(data));
   }
 }
-function DeleteTaskWith(taskId) {
-  ArrayOfTasks = ArrayOfTasks.filter((task) => task.id != taskId);
-  AddTasksToLocalStorageFrom(ArrayOfTasks);
+function deleteTaskWith(taskId) {
+  arrayOfTasks = arrayOfTasks.filter((task) => task.id !== Number(taskId));
+  addTasksToLocalStorage(arrayOfTasks);
 }
-function ToggleStatusTaskWith(taskId) {
-    for (let i = 0; i < ArrayOfTasks.length; i++) {
-      if (ArrayOfTasks[i].id == taskId) {
-        ArrayOfTasks[i].completed == false
-          ? (ArrayOfTasks[i].completed = true)
-          : (ArrayOfTasks[i].completed = false);
-      }
+function toggleStatusTaskWith(taskId) {
+  for (let i = 0; i < arrayOfTasks.length; i++) {
+    if (arrayOfTasks[i].id == taskId) {
+      arrayOfTasks[i].completed == false
+        ? (arrayOfTasks[i].completed = true)
+        : (arrayOfTasks[i].completed = false);
     }
-    AddTasksToLocalStorageFrom(ArrayOfTasks);
   }
+  addTasksToLocalStorage(arrayOfTasks);
+}
